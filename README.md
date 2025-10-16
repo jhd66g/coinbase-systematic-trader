@@ -247,7 +247,8 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 
 ### api_test.py
 - Connects to Coinbase API using secrets in `.env`
-- Pulls current and historical prices
+- Outputs current holdings of portfolio
+- Pulls and outputs current and historical (60 days ago) prices of 5 coin basket
 
 ### math_test.py
 - Runs mathematical validations for `optimize_portfolio.py`

@@ -1,6 +1,7 @@
 cbpro==1.1.4
 coinbase==2.1.0
 cryptography>=41.0.0
+matplotlib>=3.7.0
 numpy==2.3.4
 pycryptodome==3.23.0
 PyJWT>=2.8.0
@@ -8,7 +9,7 @@ pymongo==3.5.1
 python-dotenv==1.0.0
 requests==2.32.3
 setuptools==80.9.0
-six==1.10.0
+six>=1.17.0
 sortedcontainers==2.4.0
 urllib3==2.2.2
 websocket_client==0.40.0

@@ -172,11 +172,25 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
   - Rolling windows: `np.lib.stride_tricks.sliding_window_view` (optional)
 
 ### Coinbase REST API Endpoints
-- `/api/v3/brokerage/accounts` → balances & USD value
-- `/api/v3/brokerage/products/<product_id>/ticker` → current spot price
-- `/api/v3/brokerage/products/{product_id}/candles` → historical price data
-- `/api/v3/brokerage/orders` → create buy/sell orders
-- `/api/v3/brokerage/orders/<order_id>` → confirm order status
+
+**Authentication:** All endpoints use JWT (ES256) authentication with Cloud API Keys
+
+**Account Management:**
+- `GET /api/v3/brokerage/accounts` → Retrieve all account balances and available funds
+
+**Market Data:**
+- `GET /api/v3/brokerage/products/{product_id}/ticker` → Current best bid/ask and recent trades
+- `GET /api/v3/brokerage/products/{product_id}/candles?granularity=ONE_DAY` → Historical OHLCV candles
+  - Returns array of candles with: `start`, `open`, `high`, `low`, `close`, `volume`
+  - Multiple granularity options: `ONE_DAY`, `DAY`, with optional `&limit=N` parameter
+
+**Trading:**
+- `POST /api/v3/brokerage/orders/preview` → Preview order without execution (no capital risk)
+  - Returns estimated costs, fees, and sizes before placing real orders
+  - Supports market orders with `quote_size` (USD amount) or `base_size` (crypto amount)
+- `POST /api/v3/brokerage/orders` → Create and execute buy/sell orders
+  - Order types: market (IOC), limit (post-only for maker fees)
+- `GET /api/v3/brokerage/orders/{order_id}` → Check order status and fill details
 
 ---
 
@@ -246,9 +260,12 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
   - Total portfolio value
 
 ### api_test.py
-- Connects to Coinbase API using secrets in `.env`
-- Outputs current holdings of portfolio
-- Pulls and outputs current and historical (60 days ago) prices of 5 coin basket
+- Connects to Coinbase API using JWT authentication from `.env`
+- Tests 4 core functionalities:
+  1. **API Connection** - Retrieves account balances
+  2. **Current Prices** - Fetches real-time ticker data for BTC, ETH, PAXG, EURC
+  3. **Historical Prices** - Pulls closing prices from 60 days ago using candle data
+  4. **Order Preview** - Tests buy order generation for all portfolio products (no capital risk)
 
 ### math_test.py
 - Runs mathematical validations for `optimize_portfolio.py`

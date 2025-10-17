@@ -171,36 +171,48 @@ def apply_rebalancing_bands(target_weights, current_weights, band=None):
     return delta_weights
 
 
-def apply_turnover_cap(delta_weights, turnover_cap=None):
+def apply_turnover_cap(delta_weights, current_weights=None, turnover_cap=None):
     """
     Apply turnover cap: If Σ|Δwi| > cap → scale Δw by (cap / Σ|Δwi|)
+    Also ensures no negative weights: wi + Δwi >= 0 for all i
     
     Args:
         delta_weights: Portfolio weight changes
+        current_weights: Current portfolio weights (needed to prevent negatives)
         turnover_cap: Maximum turnover allowed (default: TURNOVER_CAP)
     
     Returns:
-        Scaled delta weights
+        Scaled delta weights that respect both turnover cap and no-negative-weights constraint
     """
     if turnover_cap is None:
         turnover_cap = TURNOVER_CAP
     
+    # Apply turnover cap first
     total_turnover = np.abs(delta_weights).sum()
     
     if total_turnover > turnover_cap:
         scale_factor = turnover_cap / total_turnover
         delta_weights = delta_weights * scale_factor
     
+    # Then enforce no negative weights constraint
+    # This must come AFTER turnover scaling to ensure final weights are non-negative
+    if current_weights is not None:
+        for i in range(len(delta_weights)):
+            # Ensure: current_weights[i] + delta_weights[i] >= 0
+            if current_weights[i] + delta_weights[i] < 0:
+                delta_weights[i] = -current_weights[i]  # Maximum reduction is to zero
+    
     return delta_weights
 
 
-def optimize_portfolio(prices, current_weights=None):
+def optimize_portfolio(prices, current_weights=None, halflife=None):
     """
     Main optimization function: compute optimal portfolio weights.
     
     Args:
         prices: Price array of shape (n_days, n_assets)
         current_weights: Current portfolio weights (optional)
+        halflife: EWMA halflife in days (default: EWMA_HALFLIFE from globals)
     
     Returns:
         dict with:
@@ -218,7 +230,7 @@ def optimize_portfolio(prices, current_weights=None):
     excess_returns = compute_excess_returns(returns)
     
     # Step 3: Compute EWMA covariance
-    cov_matrix = compute_ewma_covariance(excess_returns)
+    cov_matrix = compute_ewma_covariance(excess_returns, halflife=halflife)
     
     # Step 4: Compute expected returns (momentum + shrinkage)
     expected_returns = compute_expected_returns(excess_returns)
@@ -235,8 +247,13 @@ def optimize_portfolio(prices, current_weights=None):
     
     if current_weights is not None:
         delta_weights = apply_rebalancing_bands(scaled_weights, current_weights)
-        delta_weights = apply_turnover_cap(delta_weights)
+        delta_weights = apply_turnover_cap(delta_weights, current_weights)
         final_weights = current_weights + delta_weights
+        
+        # Ensure weights sum to at most 1.0 (no leverage, rest goes to USDC)
+        weight_sum = np.sum(final_weights)
+        if weight_sum > 1.0:
+            final_weights = final_weights / weight_sum
     
     # Compute final portfolio volatility
     portfolio_variance = final_weights.T @ cov_matrix @ final_weights

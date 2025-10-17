@@ -57,10 +57,10 @@ The system trades on a **medium-frequency** basis (daily) using automated Python
 - Market Cap ≈ **$1.31 billion**
 - Stablecoin pegged to the price of gold
 
-### Euro Stable Coin (EURC)
-- Current Price ≈ **$1.16**
-- All-Time High ≈ **$1.1872** (September 17, 2025)
-- Market Cap ≈ **$266 million**
+### Solana (SOL)
+- Current Price ≈ **$183.41**
+- All-Time High ≈ **$293.31** (January 19, 2025)
+- Market Cap ≈ **$113.6 billion**
 
 ### US Dollar Coin (USDC)
 - Current Price ≈ **$0.9996**
@@ -80,7 +80,7 @@ The system trades on a **medium-frequency** basis (daily) using automated Python
 - Sum of holdings = 1
 - Daily rebalance at **00:00:00 UTC**
 - Turnover cap: **50%**
-- Rebalance bands: **±2%**
+- Rebalance bands: **±20%**
 - Model Coinbase maker/taker fees; use **post-only** where possible
 - Respect minimum order sizes and increments
 - **Post-only TWAP** over 30–60 minutes, with market-order failsafe
@@ -141,8 +141,8 @@ Estimate covariance matrix **Σ** using **Exponentially Weighted Moving Average 
   `wcoins,t = xt * gt~`
 
 ### Rebalancing Constraints
-**2% Bands:**  
-If |Δwi| ≤ 0.02 → Δwi = 0
+**20% Bands:**  
+If |Δwi| ≤ 0.20 → Δwi = 0
 
 **Turnover Cap 50%:**  
 If Σ |Δwi| > 0.5 → scale Δw by (0.5 / Σ |Δwi|)
@@ -209,6 +209,7 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 
 /testing
   ├── back_test.py
+  ├── back_test_harness.py
   ├── api_test.py
   └── math_test.py
 ```
@@ -224,7 +225,7 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 ### globals.py
 - Defines:
   - Turnover cap = 50%
-  - Rebalance bands = 2%
+  - Rebalance bands = 20%
   - Target volatility = 15%
   - Risk-free rate = 4.10% (manual update)
   - Maker fee = 0.6%
@@ -247,6 +248,22 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
   - P&L
 - Saves results to `back_test_log.json`
 
+### back_test_harness.py
+- Runs `back_test.py` over different scenarios to determine preferred window size
+- Specify numbers of days to look back with `-days ` tag
+  - Test window sizes 15, 30, 45, 60, and 75
+  - `back_test.py -days x -window y`
+  - Move `back_test_log.json` and `backtest_pnl.png` to `\logs\x day back test` for each back test window
+- Compares performance against other baskets - generate graphs on 90 day performances and calculate pnl and volatility
+  - Portfolio of equal weights to all coins
+  - Portfolio of just BTC
+  - Portfolio of just ETH
+  - Portfolio of just PAXG
+  - Portfolio of just SOL
+  - Portfolio gaining interest at risk free rate
+- Store summary of results in `back_test_summary.json` in the `\logs\x day back test` directory
+
+
 ### daily_trade.py
 - Runs automatically at **00:00:00 UTC** via `launchd` (macOS)
 - Executes:
@@ -263,7 +280,7 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 - Connects to Coinbase API using JWT authentication from `.env`
 - Tests 4 core functionalities:
   1. **API Connection** - Retrieves account balances
-  2. **Current Prices** - Fetches real-time ticker data for BTC, ETH, PAXG, EURC
+  2. **Current Prices** - Fetches real-time ticker data for BTC, ETH, PAXG, SOL
   3. **Historical Prices** - Pulls closing prices from 60 days ago using candle data
   4. **Order Preview** - Tests buy order generation for all portfolio products (no capital risk)
 
@@ -274,25 +291,89 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 
 ## Results
 
-### Backtest Setup
-- Historical backtest from 1 year ago to present
-- Compare window sizes: **30, 60, 90, 180 days**
-- Output includes:
-  - Initial & final portfolio
-  - Trades made
-  - Net Sharpe (after fees)
-  - Fees/slippage losses
-  - P&L
+**Backtest period:** 2025-07-20 → 2025-10-17  
+**Tested windows:** 15 d, 30 d, 45 d, 60 d, 75 d  
+**Initial portfolio value:** \$10,000  
+**Assets:** BTC-USD, ETH-USD, PAXG-USD, SOL-USD, USDC  
 
-### Comparison Benchmarks
-- Equal-weight portfolio
-- BTC-only
-- ETH-only
-- PAXG-only
-- Risk-free (USDC interest)
-- S&P 500
+All results include transaction fees and slippage.
 
-Include **graphs** of volatility and P&L, plus **written analysis**.
+### Results by Window
+
+#### 15-Day Window  
+![Backtest 15](./logs/90%20day%20back%20test/backtest_15.png)  
+- **Final value:** \$8 848.49 (−11.52 %)  
+- **Sharpe:** 0.457 **Max DD:** 12.63 %  
+- **Rebalances:** 34 **Fees:** \$1 494 (14.9 %)  
+- **Final allocation:** BTC 12.2 % | ETH 3.9 % | PAXG 27.9 % | SOL 6.0 % | USDC 50.0 %  
+> This short-term window was far too reactive—high turnover and heavy costs erased returns.
+
+#### 30-Day Window  
+![Backtest 30](./logs/90%20day%20back%20test/backtest_30.png)  
+- **Final value:** \$10 649.55 (+6.50 %)  
+- **Sharpe:** 1.899 **Max DD:** 7.56 %  
+- **Rebalances:** 18 **Fees:** \$723 (7.2 %)  
+- **Final allocation:** BTC 23.8 % | ETH 4.3 % | PAXG 64.0 % | SOL 7.9 % | USDC 0 %  
+> Moderate improvement—reduced churn stabilized results, driven largely by PAXG exposure.
+
+#### 45-Day Window  
+![Backtest 45](./logs/90%20day%20back%20test/backtest_45.png)  
+- **Final value:** \$10 524.22 (+5.24 %)  
+- **Sharpe:** 1.303 **Max DD:** 8.57 %  
+- **Rebalances:** 13 **Fees:** \$469 (4.7 %)  
+- **Final allocation:** BTC 14.4 % | ETH 7.2 % | PAXG 33.2 % | SOL 14.7 % | USDC 30.5 %  
+> A balanced compromise—still profitable but slightly less efficient than the 30-day version.
+
+#### 60-Day Window  
+![Backtest 60](./logs/90%20day%20back%20test/backtest_60.png)  
+- **Final value:** \$11 672.24 (+16.72 %)  
+- **Sharpe:** 2.904 **Max DD:** 5.35 %  
+- **Rebalances:** 11 **Fees:** \$374 (3.7 %)  
+- **Final allocation:** BTC 0 % | ETH 9.9 % | PAXG 44.9 % | SOL 0 % | USDC 45.2 %  
+> This window achieved the **best overall performance**—highest return, best Sharpe, and low drawdown with minimal turnover.  
+> The optimizer consistently leaned into **PAXG** and **USDC**, balancing defensive assets against crypto volatility.
+
+#### 75-Day Window  
+![Backtest 75](./logs/90%20day%20back%20test/backtest_75.png)  
+- **Final value:** \$11 580.81 (+15.81 %)  
+- **Sharpe:** 2.629 **Max DD:** 5.47 %  
+- **Rebalances:** 9 **Fees:** \$294 (2.9 %)  
+- **Final allocation:** BTC 0 % | ETH 11.8 % | PAXG 53.2 % | SOL 0 % | USDC 35.0 %  
+> Slightly lower return than 60 d but similar risk profile. A strong alternative if I prefer an even slower rebalance cadence.
+
+### Window Comparison
+
+| Window | Return | Sharpe | Max DD | Trades | Fees % |
+|:--:|--:|--:|--:|--:|--:|
+| 15 d | −11.52 % | 0.457 | 12.63 % | 34 | 14.94 % |
+| 30 d | +6.50 %  | 1.899 | 7.56 %  | 18 | 7.23 % |
+| 45 d | +5.24 %  | 1.303 | 8.57 %  | 13 | 4.69 % |
+| **60 d** | **+16.72 %** | **2.904** | **5.35 %** | **11** | **3.74 %** |
+| 75 d | +15.81 % | 2.629 | 5.47 % | 9 | 2.94 % |
+
+> **Best Window:** I will deploy the **60-day window**. It produced the highest Sharpe, strong absolute return, and the lowest drawdown among all windows with minimal transaction drag.
+
+### Benchmark Comparison
+
+| Portfolio | Return | Volatility | Sharpe |
+|:--|--:|--:|--:|
+| Equal-weight (BTC, ETH, PAXG, SOL, USDC) | 3.75 % | 38.74 % | 0.390 |
+| BTC-only | −9.47 % | 34.62 % | −1.178 |
+| ETH-only | 0.90 % | 73.59 % | 0.050 |
+| PAXG-only | 25.58 % | 20.53 % | 4.549 |
+| SOL-only | 0.74 % | 86.90 % | 0.035 |
+| Risk-free | 1.02 % | 0.00 % | 0.000 |
+
+> The 60-day MVO portfolio outperformed every diversified or crypto-only benchmark except the pure **PAXG** position, which benefited from a strong gold rally during this period.  
+> Despite moderate fees, my optimized basket achieved a **higher risk-adjusted return (Sharpe 2.90)** than any single-asset or equal-weight portfolio.
+
+### Key Insights
+- **Rebalance Bands:** I had originally set the rebalance bans to 2% but noticed that my trading fees were getting very high (given my high maker and taker fees) even for the 60 and 75 day windows. I experimented with different band sizes but found 20% to generally improve portfolio performance across the board.
+- **Risk definition:** Within the MVO framework, risk is modeled as portfolio **volatility**, not directional loss.  
+- **Stability:** Longer look-back windows (60 – 75 days) produced smoother allocations, lower turnover, and better out-of-sample behavior.  
+- **Asset bias:** The optimizer favored **PAXG + USDC**, signaling capital preservation bias during this 3-month window of crypto uncertainty.  
+- **Next steps:** Expand testing to longer periods, PAXG is a relatively new asset, so there is only around 165 days of data on it as of this test.
+
 
 ---
 

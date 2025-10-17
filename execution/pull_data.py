@@ -21,8 +21,8 @@ API_KEY_NAME = os.getenv('COINBASE_API_KEY_NAME')
 PRIVATE_KEY = os.getenv('COINBASE_PRIVATE_KEY')
 BASE_URL = 'https://api.coinbase.com'
 
-# All portfolio products (including EURC stablecoin)
-PRODUCTS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'EURC-USDC']
+# All portfolio products 
+PRODUCTS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'SOL-USD']
 
 # Data file
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs', 'data.json')

@@ -43,7 +43,7 @@ def test_excess_returns():
     print("="*60)
     
     log_returns = np.array([0.02, -0.01, 0.03, -0.02])
-    rf_daily = 0.041 / 365
+    rf_daily = 0.041 / 252  # Use 252 trading days (as in actual function)
     expected_excess = log_returns - rf_daily
     
     calculated = compute_excess_returns(log_returns, 0.041)
@@ -159,20 +159,28 @@ def test_turnover_cap():
     print("TEST 8: 50% Turnover Cap")
     print("="*60)
     
+    current_weights = np.array([0.4, 0.3, 0.3])
     delta_weights = np.array([0.3, -0.2, -0.1])
     
-    delta_weights_scaled = apply_turnover_cap(delta_weights, turnover_cap=0.5)
+    delta_weights_scaled = apply_turnover_cap(delta_weights, current_weights=current_weights, turnover_cap=0.5)
     
     final_turnover = np.abs(delta_weights_scaled).sum()
     within_cap = final_turnover <= 0.5 + 1e-10
     
+    # Also check no negative weights
+    final_weights = current_weights + delta_weights_scaled
+    no_negatives = np.all(final_weights >= -1e-10)
+    
+    print(f"Current weights: {current_weights}")
     print(f"Original delta: {delta_weights}")
     print(f"Total turnover before: {np.abs(delta_weights).sum():.4f}")
     print(f"Scaled delta: {delta_weights_scaled}")
     print(f"Total turnover after: {final_turnover:.4f}")
+    print(f"Final weights: {final_weights}")
     print(f"Within 50% cap: {within_cap}")
-    print(f"Result: {'PASSED' if within_cap else 'FAILED'}")
-    return within_cap
+    print(f"No negative weights: {no_negatives}")
+    print(f"Result: {'PASSED' if (within_cap and no_negatives) else 'FAILED'}")
+    return within_cap and no_negatives
 
 
 def main():

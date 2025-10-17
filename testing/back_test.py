@@ -180,7 +180,18 @@ def run_backtest(num_days, window=60, initial_value=10000):
     # Need window for first optimization + num_days for backtest
     required_days = window + num_days
     if len(all_dates) < required_days:
+        max_days = len(all_dates) - window
         print(f"Error: Insufficient data. Need {required_days} days, have {len(all_dates)}")
+        print(f"\nCoinbase API limit: ~{len(all_dates)} days of historical data")
+        print(f"Your request: window={window} + days={num_days} = {required_days} days")
+        if max_days > 0:
+            print(f"\nSuggestion: With window={window}, maximum days = {max_days}")
+            print(f"  Try: python back_test.py -days {max_days} -window {window}")
+        else:
+            max_window = len(all_dates) - num_days
+            print(f"\nSuggestion: With days={num_days}, maximum window = {max(0, max_window)}")
+            print(f"  Try: python back_test.py -days {num_days} -window {max(1, max_window)}")
+            print(f"  Or try: python back_test.py -days 290 -window 60  (recommended)")
         return None
     
     # Backtest period: last num_days
@@ -220,31 +231,36 @@ def run_backtest(num_days, window=60, initial_value=10000):
         current_prices = np.array([prices_dict[asset][-1] for asset in RISKY_ASSETS])
         
         # Calculate returns from previous day
-        if i > 0:
-            # Get previous day's prices
-            prev_date = backtest_dates[i - 1]
+        if len(daily_values) > 0:
+            # Get previous day's prices (need to find last valid day)
+            prev_date = daily_dates[-1] if daily_dates else backtest_dates[0]
             prev_prices_dict = get_prices_on_date(data, prev_date, window)
-            prev_prices = np.array([prev_prices_dict[asset][-1] for asset in RISKY_ASSETS])
             
-            # Price returns for risky assets
-            price_returns = current_prices / prev_prices - 1
-            
-            # Portfolio return: risky assets + USDC
-            risky_portfolio_return = np.dot(risky_weights, price_returns)
-            usdc_return = usdc_weight * daily_rf
-            portfolio_return = risky_portfolio_return + usdc_return
-            
-            portfolio_value *= (1 + portfolio_return)
-            daily_returns.append(portfolio_return)
-            daily_values.append(portfolio_value)
-            daily_dates.append(date_str)
+            # Only calculate returns if we have previous prices
+            if prev_prices_dict is not None:
+                prev_prices = np.array([prev_prices_dict[asset][-1] for asset in RISKY_ASSETS])
+                
+                # Price returns for risky assets
+                price_returns = current_prices / prev_prices - 1
+                
+                # Portfolio return: risky assets + USDC
+                risky_portfolio_return = np.dot(risky_weights, price_returns)
+                usdc_return = usdc_weight * daily_rf
+                portfolio_return = risky_portfolio_return + usdc_return
+                
+                portfolio_value *= (1 + portfolio_return)
+                daily_returns.append(portfolio_return)
+        
+        # Record current portfolio value and date
+        daily_values.append(portfolio_value)
+        daily_dates.append(date_str)
         
         # Run optimization to get target weights
         try:
             # Convert prices dict to array (n_days, n_assets)
             price_matrix = np.column_stack([prices_dict[asset] for asset in RISKY_ASSETS])
             
-            result = optimize_portfolio(price_matrix, current_weights=risky_weights)
+            result = optimize_portfolio(price_matrix, current_weights=risky_weights, halflife=window)
             target_risky_weights = result['weights']
             
             # Check if rebalancing occurred

@@ -15,7 +15,7 @@ API_KEY_NAME = os.getenv('COINBASE_API_KEY_NAME')
 PRIVATE_KEY = os.getenv('COINBASE_PRIVATE_KEY')
 BASE_URL = 'https://api.coinbase.com'
 
-PRODUCTS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'EURC-USDC']
+PRODUCTS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'SOL-USD']
 
 def build_jwt(request_method, request_path):
     """Build JWT token for Coinbase API authentication."""
@@ -187,7 +187,7 @@ def test_order_preview():
         ('BTC-USD', '1.00'),
         ('ETH-USD', '1.00'),
         ('PAXG-USD', '1.00'),
-        ('EURC-USDC', '1.00')
+        ('SOL-USD', '1.00')
     ]
     
     results = []

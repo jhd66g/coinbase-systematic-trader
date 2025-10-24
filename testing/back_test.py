@@ -67,13 +67,13 @@ def get_prices_on_date(data, date_str, lookback_days):
             return None
         
         # Filter data up to date_str
-        prices = [entry for entry in data[product] if entry['date'] <= date_str]
+        prices = [entry['close'] for entry in data[product] if entry['date'] <= date_str]
         
         if len(prices) < lookback_days:
             return None
         
         # Get last lookback_days of prices
-        result[product] = np.array([p['close'] for p in prices[-lookback_days:]])
+        result[product] = np.array(prices[-lookback_days:])
     
     return result
 
@@ -194,8 +194,11 @@ def run_backtest(num_days, window=60, initial_value=10000):
             print(f"  Or try: python back_test.py -days 290 -window 60  (recommended)")
         return None
     
-    # Backtest period: last num_days
-    backtest_dates = all_dates[-num_days:]
+    # Backtest period: last num_days (or just today if num_days=0)
+    if num_days == 0:
+        backtest_dates = [all_dates[-1]]  # Just the most recent date
+    else:
+        backtest_dates = all_dates[-num_days:]
     
     print(f"Backtest period: {backtest_dates[0]} to {backtest_dates[-1]}")
     print(f"Optimization window: {window} days")

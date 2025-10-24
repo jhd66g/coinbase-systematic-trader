@@ -22,7 +22,7 @@ PRIVATE_KEY = os.getenv('COINBASE_PRIVATE_KEY')
 BASE_URL = 'https://api.coinbase.com'
 
 # All portfolio products 
-PRODUCTS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'SOL-USD']
+PRODUCTS = ['BTC-USDC', 'ETH-USDC', 'PAXG-USDC', 'SOL-USDC']
 
 # Data file
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs', 'data.json')

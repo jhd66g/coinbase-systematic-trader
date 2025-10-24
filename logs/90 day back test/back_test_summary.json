@@ -1,81 +1,81 @@
 {
   "windows": {
     "15": {
-      "return_pct": -11.515114346413812,
-      "sharpe": 0.4566473138102262,
-      "max_drawdown_pct": 12.633913748532608,
+      "return_pct": -5.859299929554891,
+      "sharpe": 1.3195079199524675,
+      "max_drawdown_pct": 11.502909261704646,
       "num_rebalances": 34,
-      "fees_pct": 14.942041205735604
+      "fees_pct": 14.282981262692923
     },
     "30": {
-      "return_pct": 6.495475260510393,
-      "sharpe": 1.8986932159988112,
-      "max_drawdown_pct": 7.562063095687642,
-      "num_rebalances": 18,
-      "fees_pct": 7.232281659868768
+      "return_pct": 7.178661289933752,
+      "sharpe": 2.0140333525449927,
+      "max_drawdown_pct": 7.327713761152048,
+      "num_rebalances": 19,
+      "fees_pct": 7.84740113140322
     },
     "45": {
-      "return_pct": 5.242217988373396,
-      "sharpe": 1.302617604208246,
-      "max_drawdown_pct": 8.568283618272472,
-      "num_rebalances": 13,
-      "fees_pct": 4.685477321162444
+      "return_pct": 6.111626196858906,
+      "sharpe": 1.3300379254738943,
+      "max_drawdown_pct": 8.573227116173035,
+      "num_rebalances": 12,
+      "fees_pct": 4.254685633298098
     },
     "60": {
-      "return_pct": 16.722413009936208,
-      "sharpe": 2.903966342353738,
-      "max_drawdown_pct": 5.349946912429671,
-      "num_rebalances": 11,
-      "fees_pct": 3.7363122012970056
+      "return_pct": 16.057955807831405,
+      "sharpe": 2.862526902825206,
+      "max_drawdown_pct": 7.414123307495278,
+      "num_rebalances": 12,
+      "fees_pct": 3.8941623986181444
     },
     "75": {
-      "return_pct": 15.808094820026565,
-      "sharpe": 2.629147704894536,
-      "max_drawdown_pct": 5.471972989625075,
-      "num_rebalances": 9,
-      "fees_pct": 2.9380087267346213
+      "return_pct": 11.342491786147148,
+      "sharpe": 2.3999237558454727,
+      "max_drawdown_pct": 5.8050080007235865,
+      "num_rebalances": 8,
+      "fees_pct": 2.8160946987752693
     }
   },
   "benchmarks": {
     "equal_weight": {
       "initial": 10000.0,
-      "final": 10375.077593636937,
-      "return_pct": 3.750775936369373,
-      "volatility": 0.3873529273410088,
-      "sharpe": 0.3898494498352888
+      "final": 10398.097026263442,
+      "return_pct": 3.9809702626344188,
+      "volatility": 0.3818491330012598,
+      "sharpe": 0.4192716265460555
     },
-    "BTC-USD_only": {
+    "BTC-USDC_only": {
       "initial": 10000.0,
-      "final": 9053.408539740369,
-      "return_pct": -9.465914602596314,
-      "volatility": 0.3462221271375515,
-      "sharpe": -1.1779466639122922
+      "final": 9290.882423648261,
+      "return_pct": -7.091175763517385,
+      "volatility": 0.35066543700934794,
+      "sharpe": -0.8602046261562409
     },
-    "ETH-USD_only": {
+    "ETH-USDC_only": {
       "initial": 10000.0,
-      "final": 10089.634438354697,
-      "return_pct": 0.8963443835469662,
-      "volatility": 0.7359275177843225,
-      "sharpe": 0.04972829399637835
+      "final": 10115.283743598231,
+      "return_pct": 1.1528374359823101,
+      "volatility": 0.7333434881667552,
+      "sharpe": 0.06410207328340817
     },
-    "PAXG-USD_only": {
+    "PAXG-USDC_only": {
       "initial": 10000.0,
-      "final": 12558.055596156797,
-      "return_pct": 25.58055596156797,
-      "volatility": 0.20533631424286733,
-      "sharpe": 4.549329936955794
+      "final": 12260.552625927623,
+      "return_pct": 22.60552625927623,
+      "volatility": 0.23891409514921916,
+      "sharpe": 3.4983989943426965
     },
-    "SOL-USD_only": {
+    "SOL-USDC_only": {
       "initial": 10000.0,
-      "final": 10073.821066549137,
-      "return_pct": 0.7382106654913696,
-      "volatility": 0.8689715436667862,
-      "sharpe": 0.03471199090618326
+      "final": 10229.452599226328,
+      "return_pct": 2.2945259922632797,
+      "volatility": 0.842744830842372,
+      "sharpe": 0.11039876932681258
     },
     "risk_free": {
       "initial": 10000.0,
-      "final": 10101.602900538277,
-      "return_pct": 1.0160290053827703,
+      "final": 10095.378481598838,
+      "return_pct": 0.9537848159883834,
       "volatility": 0.0,
       "sharpe": 0.0
     }

@@ -7,7 +7,7 @@ REBALANCE_BAND = 0.20  # ±20% rebalancing bands
 TARGET_VOLATILITY = 0.15  # 15% annualized volatility target
 
 # Risk-free rate
-RISK_FREE_RATE = 0.041  # 4.10% annualized APY (USDC yield on Coinbase)
+RISK_FREE_RATE = 0.0385  # 4.10% annualized APY (USDC yield on Coinbase)
 
 # Trading fees
 MAKER_FEE = 0.006  # 0.6% maker fee
@@ -19,5 +19,5 @@ EWMA_HALFLIFE = 60  # Half-life for EWMA covariance (days)
 MOMENTUM_SHRINKAGE = 0.1  # Shrinkage factor γ for expected returns
 
 # Portfolio products
-RISKY_ASSETS = ['BTC-USD', 'ETH-USD', 'PAXG-USD', 'SOL-USD']
+RISKY_ASSETS = ['BTC-USDC', 'ETH-USDC', 'PAXG-USDC', 'SOL-USDC']
 RISK_FREE_ASSET = 'USDC'

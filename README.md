@@ -205,6 +205,7 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
   ├── pull_data.py
   ├── globals.py
   ├── optimize_portfolio.py
+  ├── rebalance.py
   └── daily_trade.py
 
 /testing
@@ -263,18 +264,33 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
   - Portfolio gaining interest at risk free rate
 - Store summary of results in `back_test_summary.json` in the `\logs\x day back test` directory
 
-
-### daily_trade.py
-- Runs automatically at **00:00:00 UTC** via `launchd` (macOS)
+### rebalance.py
+- Rebalances the portfolio in line with the trading rules
+  - Calls the API to systematically trade holdings
 - Executes:
   - `pull_data.py` (past 60 days)
   - `optimize_portfolio.py`
-  - Rebalances portfolio if within trading rules
+
+### show_optimal_portfolio.py
+- Displays optimal portfolio allocation based on latest 60 days of data
+- Shows "fresh start" allocation (if starting from zero)
+- Useful for checking target weights without rebalance band constraints
+- Does not execute any trades
+
+### daily_trade.py
+- Runs automatically at **00:00:00 UTC** via `launchd` (macOS) every day
+- Executes `rebalance.py`
 - Logs:
   - Trades
   - Portfolio weights
   - P&L
   - Total portfolio value
+- Sends daily execution summary in an email
+  - My portfolio holdings
+  - Trades
+  - Optimal portfolio
+  - Day over day PnL
+  - Lifetime PnL
 
 ### api_test.py
 - Connects to Coinbase API using JWT authentication from `.env`
@@ -294,7 +310,7 @@ Round orders to Coinbase’s step sizes and minimum notional limits.
 **Backtest period:** 2025-07-20 → 2025-10-17  
 **Tested windows:** 15 d, 30 d, 45 d, 60 d, 75 d  
 **Initial portfolio value:** \$10,000  
-**Assets:** BTC-USD, ETH-USD, PAXG-USD, SOL-USD, USDC  
+**Assets:** BTC-USDC, ETH-USDC, PAXG-USDC, SOL-USDC, USDC  
 
 All results include transaction fees and slippage.
 
